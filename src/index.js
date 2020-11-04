@@ -3,12 +3,14 @@ const { ApolloServer } = require("apollo-server");
 
 const typeDefs = require("./graphql/typeDefs");
 const resolvers = require("./graphql/resolvers");
+const authorizer = require("./graphql/authorizer");
 
 const { MONGODB_URL } = require("../config");
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: authorizer,
 });
 
 mongoose
