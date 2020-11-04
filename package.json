@@ -1,0 +1,19 @@
+{
+  "name": "merng",
+  "version": "1.0.0",
+  "description": "sample social app",
+  "main": "index.js",
+  "author": "Charles",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "apollo-server": "^2.19.0",
+    "graphql": "^15.4.0",
+    "mongoose": "^5.10.11"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}
