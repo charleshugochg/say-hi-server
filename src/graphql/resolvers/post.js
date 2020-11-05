@@ -1,8 +1,16 @@
-const { UserInputError, AuthenticationError } = require("apollo-server");
+const {
+  UserInputError,
+  AuthenticationError,
+  PubSub,
+} = require("apollo-server");
 
 const Post = require("../../models/Post");
 
 const { commentInputValidator } = require("../../utils/validators");
+
+const pubsub = new PubSub();
+
+const POST_ADDED = "POST_ADDED";
 
 module.exports = {
   Query: {
@@ -31,6 +39,7 @@ module.exports = {
         user: user.id,
       });
       const post = await newPost.save();
+      pubsub.publish(POST_ADDED, { postAdded: post });
       return post;
     },
     deletePost: async (_, { postId }, { user }) => {
@@ -122,6 +131,11 @@ module.exports = {
       post.likes = post.likes.filter((l) => l.username !== user.username);
       await post.save();
       return post;
+    },
+  },
+  Subscription: {
+    postAdded: {
+      subscribe: () => pubsub.asyncIterator([POST_ADDED]),
     },
   },
 };
