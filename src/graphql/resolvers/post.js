@@ -2,6 +2,8 @@ const { UserInputError, AuthenticationError } = require("apollo-server");
 
 const Post = require("../../models/Post");
 
+const { commentInputValidator } = require("../../utils/validators");
+
 module.exports = {
   Query: {
     getPosts: async () => {
@@ -41,6 +43,85 @@ module.exports = {
       }
       await post.delete();
       return "Post deleted successfully.";
+    },
+    createComment: async (_, { postId, body }, { user }) => {
+      const { valid, errors } = commentInputValidator({ body });
+      if (!valid) {
+        throw new UserInputError("Validation Error.", {
+          errors,
+        });
+      }
+
+      if (!user) {
+        throw new AuthenticationError("Access denied.");
+      }
+
+      const post = await Post.findById(postId);
+      if (!post) {
+        throw new UserInputError("Post not found.");
+      }
+
+      post.comments.unshift({
+        username: user.username,
+        body,
+        createdAt: new Date().toISOString(),
+      });
+      await post.save();
+      return post;
+    },
+    deleteComment: async (_, { postId, commentId }, { user }) => {
+      const post = await Post.findById(postId);
+      if (!post) {
+        throw new UserInputError("Post not found.");
+      }
+
+      const comment = post.comments.find((c) => c.id === commentId);
+      if (!comment) {
+        throw new UserInputError("Comment not found.");
+      }
+
+      if (!user || comment.username !== user.username) {
+        throw new AuthenticationError("Access denied.");
+      }
+
+      post.comments = post.comments.filter((c) => c.id !== commentId);
+      await post.save();
+      return post;
+    },
+    likePost: async (_, { postId }, { user }) => {
+      const post = await Post.findById(postId);
+      if (!post) {
+        throw new UserInputError("Post not found.");
+      }
+
+      if (!user) {
+        throw new AuthenticationError("Access denied.");
+      }
+
+      if (post.likes.find((l) => l.username === user.username)) {
+        return post;
+      }
+
+      post.likes = post.likes.concat({
+        username: user.username,
+        createdAt: new Date().toISOString(),
+      });
+      await post.save();
+      return post;
+    },
+    unlikePost: async (_, { postId }, { user }) => {
+      const post = await Post.findById(postId);
+      if (!post) {
+        throw new UserInputError("Post not found.");
+      }
+
+      if (!user) {
+        throw new AuthenticationError("Access denied.");
+      }
+
+      post.likes = post.likes.filter((l) => l.username !== user.username);
+      await post.save();
+      return post;
     },
   },
 };

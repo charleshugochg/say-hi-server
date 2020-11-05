@@ -41,3 +41,14 @@ module.exports.loginInputValidator = ({ username, password }) => {
     errors,
   };
 };
+
+module.exports.commentInputValidator = ({ body }) => {
+  const errors = {};
+  if (body.trim() === "") {
+    errors.body = "body must not be empty.";
+  }
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+};
