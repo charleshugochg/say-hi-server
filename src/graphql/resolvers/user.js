@@ -77,12 +77,20 @@ module.exports = {
       // check username exists
       const user = await User.findOne({ username });
       if (!user) {
-        throw new UserInputError("Wrong username or password");
+        throw new UserInputError("Wrong username or password", {
+          errors: {
+            general: "wrong username or password",
+          },
+        });
       }
       // verify password
       const passwordMatch = await bcrypt.compare(password, user.passwordHash);
       if (!passwordMatch) {
-        throw new UserInputError("Wrong username or password");
+        throw new UserInputError("Wrong username or password", {
+          errors: {
+            general: "wrong username or password",
+          },
+        });
       }
       // generate token
       const token = generateJwt(user);

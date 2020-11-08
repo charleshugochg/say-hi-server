@@ -42,7 +42,7 @@ module.exports.loginInputValidator = ({ username, password }) => {
   };
 };
 
-module.exports.commentInputValidator = ({ body }) => {
+module.exports.bodyInputValidator = ({ body }) => {
   const errors = {};
   if (body.trim() === "") {
     errors.body = "body must not be empty.";

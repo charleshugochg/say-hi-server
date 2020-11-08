@@ -6,7 +6,7 @@ const {
 
 const Post = require("../../models/Post");
 
-const { commentInputValidator } = require("../../utils/validators");
+const { bodyInputValidator } = require("../../utils/validators");
 
 const pubsub = new PubSub();
 
@@ -15,7 +15,7 @@ const POST_ADDED = "POST_ADDED";
 module.exports = {
   Query: {
     getPosts: async () => {
-      const posts = await Post.find({});
+      const posts = await Post.find({}).sort({ createdAt: -1 });
       return posts;
     },
     getPost: async (_, { postId }) => {
@@ -30,6 +30,13 @@ module.exports = {
     createPost: async (_, { body }, { user }) => {
       if (!user) {
         throw new AuthenticationError("Access denied.");
+      }
+
+      const { valid, errors } = bodyInputValidator({ body });
+      if (!valid) {
+        throw new UserInputError("Validation Error", {
+          errors,
+        });
       }
 
       const newPost = new Post({
@@ -54,7 +61,7 @@ module.exports = {
       return "Post deleted successfully.";
     },
     createComment: async (_, { postId, body }, { user }) => {
-      const { valid, errors } = commentInputValidator({ body });
+      const { valid, errors } = bodyInputValidator({ body });
       if (!valid) {
         throw new UserInputError("Validation Error.", {
           errors,
